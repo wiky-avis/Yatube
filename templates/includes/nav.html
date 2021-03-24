@@ -1,0 +1,14 @@
+<nav class='navbar navbar-light' style='background-color: #e3f2fd;'>
+  <a class='navbar-brand' href='{% url "index" %}'><span style='color:red'>Ya</span>tube</a>
+  <nav class='my-2 my-md-0 mr-md-3'>
+    {% if user.is_authenticated %}
+    Пользователь: {{ user.username }}.
+    <a class='p-2 text-dark' href='{% url "new_post" %}'><button type='button' class='btn btn-primary btn-sm'>Новая запись</button></a>
+    <a class='p-2 text-dark' href='{% url "password_change" %}'><span style='color:rgb(6, 139, 13)'>Изменить пароль</span></a>
+    <a class='p-2 text-dark' href='{% url "logout" %}'><span style='color:red'>Выйти</span></a>
+    {% else %}
+    <a class='p-2 text-dark' href='{% url "login" %}'>Войти</a> |
+    <a class='p-2 text-dark' href='{% url "signup" %}'>Регистрация</a>
+    {% endif %}
+  </nav>
+</nav> 
