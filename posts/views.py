@@ -5,7 +5,7 @@ from django.shortcuts import (get_list_or_404, get_object_or_404, redirect,
                               render)
 
 from .forms import CommentForm, PostForm
-from .models import Group, Post
+from .models import Follow, Group, Post
 
 User = get_user_model()
 
@@ -115,7 +115,40 @@ def profile(request, username):
             'page': page,
             'count': count,
             'profile': profile,
-            'is_active': True})
+            'is_active': True,
+            'follower': profile.follower.count(),
+            'following': profile.following.count()})
+
+
+@login_required
+def follow_index(request):
+    posts = Post.objects.select_related('author').filter(
+        author__following__user=request.user).all()
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    return render(
+        request,
+        'posts/follow.html',
+        {
+            'paginator': paginator,
+            'page': page})
+
+
+@login_required
+def profile_follow(request, username):
+    author = get_object_or_404(User, username=username)
+    if request.user != author:
+        Follow.objects.create(user=request.user, author=author)
+    return redirect('profile', username=username)
+
+
+@login_required
+def profile_unfollow(request, username):
+    author = get_object_or_404(User, username=username)
+    if request.user != author:
+        Follow.objects.get(user=request.user, author=author).delete()
+    return redirect('profile', username=username)
 
 
 def page_not_found(request, exception):

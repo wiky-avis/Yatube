@@ -18,7 +18,7 @@
     <strong class='d-block text-gray-dark'>#{{ post.group.title }}</strong>
   </a>
   {% endif %}
-
+  <p></p>
   <div class='d-flex justify-content-between align-items-center'>
     <div class='btn-group'>
     {% if post.comments.exists %}
@@ -26,6 +26,7 @@
         Комментариев: {{ post.comments.count }}
       </a>
     {% endif %}
+
     {% if is_active and user.is_authenticated %}
       <a class='btn btn-sm btn-primary' href='{% url "post" post.author.username post.id %}' role='button'>
         Добавить комментарий

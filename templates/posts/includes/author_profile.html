@@ -10,9 +10,24 @@
   <ul class='list-group list-group-flush'>
     <li class='list-group-item'>
       <div class='h6 text-muted'>
-      Подписчиков: XXX <br />
-      Подписан: XXX
+        Подписчиков: {{following}} <br />
+        Подписан: {{follower}}
       </div>
+    </li>
+    {% if profile.username != request.user.username %}
+    <li class='list-group-item'>
+      {% if following %}
+      <a class='btn btn-sm btn-light' 
+              href='{% url "profile_unfollow" profile.username %}' role='button'> 
+              Отписаться 
+      </a> 
+      {% else %}
+      <a class='btn btn-sm btn-primary' 
+              href='{% url "profile_follow" profile.username %}' role='button'>
+      Подписаться 
+      </a>
+      {% endif %}
+    {% endif %}
     </li>
     <li class='list-group-item'>
       <div class='h6 text-muted'>
