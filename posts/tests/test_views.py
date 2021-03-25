@@ -297,8 +297,7 @@ class TestCache(TestCase):
 
         self.client.post(
             reverse('new_post'),
-            data={'author': TestCache.user, 'text': 'проверка кэша 2'}
-            )
+            data={'author': TestCache.user, 'text': 'проверка кэша 2'})
 
         response = self.client.get(reverse('index'))
         self.assertNotContains(response, 'проверка кэша 2')
