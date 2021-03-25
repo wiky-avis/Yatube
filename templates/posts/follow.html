@@ -3,7 +3,7 @@
 
 {% block content %}
   <div class='container'>
-    {% include 'posts/includes/menu.html' with follow=True %}
+    {% include 'includes/menu.html' with follow=True %}
         <h1> Последние обновления на странице автора</h1>
         {% for post in page %}
           {% include 'posts/includes/post_item.html' with post=post %}

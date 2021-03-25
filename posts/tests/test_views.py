@@ -10,7 +10,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.models import Group, Post, Follow, Comment
+from posts.models import Comment, Follow, Group, Post
 
 User = get_user_model()
 
@@ -309,7 +309,9 @@ class TestFollow(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user_follower = User.objects.create_user(username='vika')
+
         cls.user_following = User.objects.create_user(username='victor')
+
         cls.user_follower_2 = User.objects.create_user(username='zhanna')
 
     def setUp(self):
@@ -325,63 +327,47 @@ class TestFollow(TestCase):
         self.client_follower_2.force_login(TestFollow.user_follower_2)
 
     def test_follow_unfollow_authorized_user(self):
-        followers = Follow.objects.filter(
-            author=TestFollow.user_following.id).count()
-        following = Follow.objects.filter(
-            user=TestFollow.user_follower.id).count()
-
-        self.assertEqual(followers, 0)
-        self.assertEqual(following, 0)
-
         self.client_follower.get(reverse(
             'profile_follow', kwargs={
                 'username': TestFollow.user_following.username}))
 
-        followers = Follow.objects.filter(
-            author=TestFollow.user_following).count()
-        following = Follow.objects.filter(
-            user=TestFollow.user_follower).count()
+        response = self.client_follower.get(reverse(
+            'profile', kwargs={
+                'username': TestFollow.user_following.username}))
 
-        self.assertEqual(followers, 1)
-        self.assertEqual(following, 1)
+        self.assertEqual(response.context['following_count'], 1)
 
         self.client_follower.get(reverse(
             'profile_unfollow', kwargs={
                 'username': TestFollow.user_following.username}))
 
-        followers = Follow.objects.filter(
-            author=TestFollow.user_following).count()
-        following = Follow.objects.filter(
-            user=TestFollow.user_follower).count()
+        response = self.client_follower.get(reverse(
+            'profile', kwargs={
+                'username': TestFollow.user_following.username}))
 
-        self.assertEqual(followers, 0)
-        self.assertEqual(following, 0)
+        self.assertEqual(response.context['following_count'], 0)
 
     def test_follow_not_authorized_user(self):
-        followers = Follow.objects.filter(
-            author=TestFollow.user_following.id).count()
-        self.assertEqual(followers, 0)
-
         self.user_not_authorized.get(reverse(
             'profile_follow', kwargs={
                 'username': TestFollow.user_following.username}))
 
-        followers = Follow.objects.filter(
-            author=TestFollow.user_following).count()
-        self.assertEqual(followers, 0)
+        response = self.user_not_authorized.get(reverse(
+            'profile', kwargs={
+                'username': TestFollow.user_following.username}))
+
+        self.assertEqual(response.context['following_count'], 0)
 
     def test_check_new_post_from_follower(self):
         self.client_follower.get(reverse(
             'profile_follow', kwargs={
-                'username': TestFollow.user_following.username}
-            ))
+                'username': TestFollow.user_following.username}))
 
         post_data = {'text': 'Новая запись появляется в ленте подписчиков'}
         self.client_following.post(
             reverse('new_post'),
             data=post_data,
-            follow=True
-            )
+            follow=True)
 
         response = self.client_follower.get(reverse('follow_index'))
         self.assertContains(response, post_data['text'])

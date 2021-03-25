@@ -10,21 +10,21 @@
   <ul class='list-group list-group-flush'>
     <li class='list-group-item'>
       <div class='h6 text-muted'>
-        Подписчиков: {{following}} <br />
-        Подписан: {{follower}}
+        Подписчиков: {{following_count}} <br />
+        Подписан: {{follower_count}}
       </div>
     </li>
-    {% if profile.username != request.user.username %}
+    {% if profile != request.user %}
     <li class='list-group-item'>
       {% if following %}
       <a class='btn btn-sm btn-light' 
-              href='{% url "profile_unfollow" profile.username %}' role='button'> 
+              href='{% url "profile_unfollow" username=profile.username %}' role='button'> 
               Отписаться 
       </a> 
       {% else %}
       <a class='btn btn-sm btn-primary' 
-              href='{% url "profile_follow" profile.username %}' role='button'>
-      Подписаться 
+              href='{% url "profile_follow" username=profile.username %}' role='button'>
+              Подписаться 
       </a>
       {% endif %}
     {% endif %}
