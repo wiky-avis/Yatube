@@ -106,14 +106,13 @@ def post_delete(request, username, post_id):
 def profile(request, username):
     profile = get_object_or_404(User, username=username)
     posts = profile.posts.all()
-    count = posts.count()
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     return render(
         request, 'posts/profile.html', {
             'page': page,
-            'count': count,
+            'count': posts.count(),
             'profile': profile,
             'is_active': True,
             'follower': profile.follower.count(),
