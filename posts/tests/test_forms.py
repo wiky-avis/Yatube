@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
+from http import HTTPStatus
 
 from posts.models import Group, Post
 
@@ -58,7 +59,7 @@ class PostCreateFormTests(TestCase):
 
     def create_or_edit_post(self, response, post, text, url, **kwargs):
         self.assertRedirects(response, reverse(url, **kwargs))
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertTrue(
             Post.objects.filter(
                 text=text,

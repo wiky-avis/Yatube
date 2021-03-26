@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
+from http import HTTPStatus
 
 User = get_user_model()
 
@@ -25,4 +26,4 @@ class AboutStaticUrls(TestCase):
         for template, url in AboutStaticUrls.templates_url_names.items():
             with self.subTest(url=url):
                 response = self.guest_client.get(url)
-                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.status_code, HTTPStatus.OK)

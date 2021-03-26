@@ -1,8 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.shortcuts import (get_list_or_404, get_object_or_404, redirect,
-                              render)
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post
@@ -11,7 +10,7 @@ User = get_user_model()
 
 
 def index(request):
-    post_list = get_list_or_404(Post)
+    post_list = Post.objects.select_related().all()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -142,8 +141,9 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
-    if request.user != author:
-        Follow.objects.get_or_create(
+    following = author.following.all()
+    if request.user != author and request.user not in following:
+        Follow.objects.create(
             user_id=request.user.id, author_id=author.id)
     return redirect('profile', username=username)
 
@@ -151,6 +151,7 @@ def profile_follow(request, username):
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
+    following = author.following.all()
     if request.user != author:
         Follow.objects.get(
             user_id=request.user.id, author_id=author.id).delete()

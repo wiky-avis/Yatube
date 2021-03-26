@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
+from http import HTTPStatus
 
 from posts.models import Group, Post
 
@@ -51,12 +52,12 @@ class StaticURLTests(TestCase):
         for url in StaticURLTests.url_pages:
             with self.subTest(value=url):
                 response = self.guest_client.get(url)
-                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_page_new_availability_for_authorized_user(self):
         response = self.client_noauthor_auth.get('/new/')
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_urls_uses_correct_template(self):
         url = StaticURLTests.url
@@ -73,19 +74,19 @@ class StaticURLTests(TestCase):
         for url in StaticURLTests.url_pages:
             with self.subTest(value=url):
                 response = self.client_author_auth.get(url)
-                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_profile_page_availability_for_noauthor_post(self):
         for url in StaticURLTests.url_pages:
             with self.subTest(value=url):
                 response = self.client_noauthor_auth.get(url)
-                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_profile_page_availability_for_guest_user(self):
         for url in StaticURLTests.url_pages:
             with self.subTest(value=url):
                 response = self.guest_client.get(url)
-                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_redirect_from_page_new_works_correctly_for_guest_user(self):
         response = self.guest_client.get('/new/')
@@ -103,7 +104,7 @@ class StaticURLTests(TestCase):
             'post', kwargs={
                 'username': StaticURLTests.user.username,
                 'post_id': StaticURLTests.post.id}))
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_redirect_from_page_post_edit_works_correctly_for_guest_user(self):
         response = self.guest_client.get(StaticURLTests.url)
@@ -125,4 +126,4 @@ class TestPage404(TestCase):
 
     def test_page_return_404(self):
         response = self.client.get('/page_not_found/')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
