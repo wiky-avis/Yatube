@@ -10,7 +10,7 @@ User = get_user_model()
 
 
 def index(request):
-    post_list = Post.objects.select_related().all()
+    post_list = Post.objects.select_related('group', 'author').all()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -152,9 +152,9 @@ def profile_follow(request, username):
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
     following = author.following.all()
-    if request.user != author:
-        Follow.objects.get(
-            user_id=request.user.id, author_id=author.id).delete()
+    for follow in following:
+        if follow.user == request.user:
+            follow.delete()
     return redirect('profile', username=username)
 
 
