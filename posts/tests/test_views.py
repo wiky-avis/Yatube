@@ -203,12 +203,10 @@ class ImgPagesTests(TestCase):
             content=cls.small_gif,
             content_type='image/gif')
 
-        cls.user = User.objects.create_user(
-            first_name='Виктория', last_name='Аксентий', username='vika')
+        cls.user = User.objects.create_user(username='vika')
 
         cls.group = Group.objects.create(
-            title='Название тестовой группы',
-            description='описание тестовой группы',
+            title='Группа',
             slug='test-slug')
 
         cls.post = Post.objects.create(
