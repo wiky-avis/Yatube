@@ -1,6 +1,5 @@
 import shutil
 import tempfile
-import time
 
 from django import forms
 from django.conf import settings
