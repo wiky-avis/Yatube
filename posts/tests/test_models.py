@@ -52,19 +52,19 @@ class PostModelTest(TestCase):
                 self.assertEqual(
                     post._meta.get_field(value).help_text, expected)
 
-    def test_object_post_name_is_text_field(self):
-        post = PostModelTest.post
+    def test_object_post_name_is_text_and_group_name_is_title(self):
         post_b = Post.objects.get(text=PostModelTest.post.text)
-
-        self.assertEqual(len(str(post)), 15)
-        self.assertEqual(str(post), post_b.text[:15])
-
         post_2 = Post.objects.create(
             text='Текст поста', author=PostModelTest.user)
 
-        self.assertEqual(len(str(post_2)), 11)
-        self.assertEqual(str(post_2), post_2.text)
+        str_test = {
+            f'{PostModelTest.post}': post_b.text[:15],
+            f'{post_2}': post_2.text,
+            f'{PostModelTest.group}': PostModelTest.group.title
+        }
 
-    def test_object_group_name_is_title_field(self):
-        group = PostModelTest.group
-        self.assertEqual(group.title, str(group))
+        self.assertEqual(len(str(PostModelTest.post)), 15)
+        self.assertEqual(len(str(post_2)), 11)
+        for value, expected in str_test.items():
+            with self.subTest():
+                self.assertEqual(value, expected)
