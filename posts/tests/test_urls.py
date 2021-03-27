@@ -40,8 +40,6 @@ class StaticURLTests(TestCase):
             f'/{cls.post_author}/{cls.post_id}/']
 
     def setUp(self):
-        self.guest_client = Client()
-
         self.client_noauthor_auth = Client()
         self.user = User.objects.create_user(username='victor')
         self.client_noauthor_auth.force_login(self.user)
@@ -52,7 +50,7 @@ class StaticURLTests(TestCase):
     def test_page_availability_for_guest_user(self):
         for url in StaticURLTests.url_pages:
             with self.subTest(value=url):
-                response = self.guest_client.get(url)
+                response = self.client.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_page_new_availability_for_authorized_user(self):
@@ -86,11 +84,11 @@ class StaticURLTests(TestCase):
     def test_profile_page_availability_for_guest_user(self):
         for url in StaticURLTests.url_pages:
             with self.subTest(value=url):
-                response = self.guest_client.get(url)
+                response = self.client.get(url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_redirect_from_page_new_works_correctly_for_guest_user(self):
-        response = self.guest_client.get('/new/')
+        response = self.client.get('/new/')
 
         reverse_login = reverse('login')
         reverse_new_post = reverse('new_post')
@@ -108,7 +106,7 @@ class StaticURLTests(TestCase):
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_redirect_from_page_post_edit_works_correctly_for_guest_user(self):
-        response = self.guest_client.get(StaticURLTests.url)
+        response = self.client.get(StaticURLTests.url)
 
         kw = {
             'username': StaticURLTests.post_author,
@@ -122,8 +120,6 @@ class StaticURLTests(TestCase):
 
 
 class TestPage404(TestCase):
-    def setUp(self):
-        self.client = Client()
 
     def test_page_return_404(self):
         response = self.client.get('/page_not_found/')

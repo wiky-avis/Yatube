@@ -44,8 +44,6 @@ class PostsPagesTests(TestCase):
             'posts/new_post.html': reverse('new_post')}
 
     def setUp(self):
-        self.guest_client = Client()
-
         self.client_auth = Client()
         self.client_auth.force_login(PostsPagesTests.user)
 
@@ -123,7 +121,7 @@ class PostsPagesTests(TestCase):
         self.assertNotContains(response, PostsPagesTests.post.text)
 
     def test_username_page_show_correct_context(self):
-        response = self.guest_client.get(
+        response = self.client.get(
             reverse(
                 'profile',
                 kwargs={'username': PostsPagesTests.user.username}))
@@ -143,7 +141,7 @@ class PostsPagesTests(TestCase):
         self.show_correct_context_post(post_object)
 
     def test_post_view_page_show_correct_context(self):
-        response = self.guest_client.get(
+        response = self.client.get(
             reverse(
                 'post',
                 kwargs={

@@ -22,10 +22,6 @@ class PostModelTest(TestCase):
             slug='test-slug'
         )
 
-    def setUp(self):
-        self.client = Client()
-        self.client.force_login(PostModelTest.user)
-
     def test_verbose_name(self):
         post = PostModelTest.post
         field_verboses = {
