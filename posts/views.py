@@ -17,7 +17,6 @@ def index(request):
     return render(
         request, 'index.html', {
             'page': page,
-            'paginator': paginator,
             'is_active': True})
 
 
@@ -31,7 +30,6 @@ def group_posts(request, slug):
         request, 'group.html', {
             'group': group,
             'page': page,
-            'paginator': paginator,
             'is_active': True})
 
 
