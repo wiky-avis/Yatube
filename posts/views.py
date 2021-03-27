@@ -11,9 +11,9 @@ User = get_user_model()
 
 def index(request):
     post_list = Post.objects.select_related('group', 'author').all()
-    pag = Paginator(post_list, 10)
+    paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
-    page = pag.get_page(page_number)
+    page = paginator.get_page(page_number)
     return render(
         request, 'index.html', {
             'page': page,
@@ -23,9 +23,9 @@ def index(request):
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
     posts = group.posts.all()
-    pag = Paginator(posts, 10)
+    paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
-    page = pag.get_page(page_number)
+    page = paginator.get_page(page_number)
     return render(
         request, 'group.html', {
             'group': group,
@@ -105,9 +105,9 @@ def post_delete(request, username, post_id):
 def profile(request, username):
     profile = get_object_or_404(User, username=username)
     posts = profile.posts.all()
-    pag = Paginator(posts, 10)
+    paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
-    page = pag.get_page(page_number)
+    page = paginator.get_page(page_number)
     following = Follow.objects.filter(
         user=request.user.id, author=profile.id).all()
     return render(
