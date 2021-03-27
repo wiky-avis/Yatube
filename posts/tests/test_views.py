@@ -19,23 +19,6 @@ class PostsPagesTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        settings.MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
-
-        cls.small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x02\x00'
-            b'\x01\x00\x80\x00\x00\x00\x00\x00'
-            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-            b'\x0A\x00\x3B'
-        )
-
-        cls.uploaded = SimpleUploadedFile(
-            name='small.gif',
-            content=cls.small_gif,
-            content_type='image/gif'
-        )
-
         cls.user = User.objects.create_user(
             first_name='Виктория', last_name='Аксентий', username='vika')
 
@@ -52,19 +35,13 @@ class PostsPagesTests(TestCase):
         cls.post = Post.objects.create(
             text='Текст тестового поста',
             author=cls.user,
-            group=cls.group,
-            image=cls.uploaded)
+            group=cls.group)
 
         cls.templates_url_names = {
             'index.html': reverse('index'),
             'group.html': reverse(
                 'group_posts', kwargs={'slug': cls.group.slug}),
             'posts/new_post.html': reverse('new_post')}
-
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
-        super().tearDownClass()
 
     def setUp(self):
         self.guest_client = Client()
@@ -77,8 +54,6 @@ class PostsPagesTests(TestCase):
         self.assertEqual(post_object.pub_date, PostsPagesTests.post.pub_date)
         self.assertEqual(post_object.text, PostsPagesTests.post.text)
         self.assertEqual(post_object.group, PostsPagesTests.group)
-        self.assertEqual(
-            post_object.image, f'posts/{PostsPagesTests.uploaded}')
 
     def test_pages_uses_correct_template(self):
         for template, url in PostsPagesTests.templates_url_names.items():
@@ -208,6 +183,92 @@ class PostsPagesTests(TestCase):
                 self.assertIsInstance(form_field, expected)
 
 
+class ImgPagesTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        settings.MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
+
+        cls.small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+
+        cls.uploaded = SimpleUploadedFile(
+            name='small.gif',
+            content=cls.small_gif,
+            content_type='image/gif')
+
+        cls.user = User.objects.create_user(
+            first_name='Виктория', last_name='Аксентий', username='vika')
+
+        cls.group = Group.objects.create(
+            title='Название тестовой группы',
+            description='описание тестовой группы',
+            slug='test-slug')
+
+        cls.post = Post.objects.create(
+            text='Текст тестового поста',
+            author=cls.user,
+            group=cls.group,
+            image=cls.uploaded)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
+
+    def setUp(self):
+        self.client = Client()
+
+    def test_index_pages_show_correct_context(self):
+        response = self.client.get(reverse('index'))
+
+        post_object = response.context['page'][0]
+
+        self.assertEqual(
+            post_object.image, f'posts/{ImgPagesTests.uploaded}')
+
+    def test_group_page_show_correct_context(self):
+        response = self.client.get(
+            reverse(
+                'group_posts',
+                kwargs={'slug': ImgPagesTests.group.slug}))
+
+        post_object = response.context['page'][0]
+
+        self.assertEqual(
+            post_object.image, f'posts/{ImgPagesTests.uploaded}')
+
+    def test_username_page_show_correct_context(self):
+        response = self.client.get(
+            reverse(
+                'profile',
+                kwargs={'username': ImgPagesTests.user.username}))
+
+        post_object = response.context['page'][0]
+
+        self.assertEqual(
+            post_object.image, f'posts/{ImgPagesTests.uploaded}')
+
+    def test_post_view_page_show_correct_context(self):
+        response = self.client.get(
+            reverse(
+                'post',
+                kwargs={
+                    'username': ImgPagesTests.user.username,
+                    'post_id': ImgPagesTests.post.id}))
+
+        post_object = response.context['post']
+
+        self.assertEqual(
+            post_object.image, f'posts/{ImgPagesTests.uploaded}')
+
+
 class PaginatorViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -229,7 +290,7 @@ class PaginatorViewsTest(TestCase):
         self.client_auth = Client()
         self.client_auth.force_login(PaginatorViewsTest.user)
 
-    def test_index_and_group_second_page_containse_three_records(self):
+    def test_index_and_group_second_page_contains_three_records(self):
         response_pages = (self.client_auth.get(
             reverse('index') + '?page=2'),
             self.client_auth.get(
@@ -242,7 +303,7 @@ class PaginatorViewsTest(TestCase):
                 self.assertEqual(
                     len(response.context.get('page').object_list), 3)
 
-    def test_index_and_group_first_page_containse_ten_records(self):
+    def test_index_and_group_first_page_contains_ten_records(self):
         response_pages = (
             self.client_auth.get(reverse('index')),
             self.client_auth.get(reverse(
@@ -279,7 +340,7 @@ class TestCache(TestCase):
         response2 = self.client.get(reverse('index'))
         self.assertContains(response2, post.text)
 
-        time.sleep(25)
+        response = cache.delete('index_page')
 
         response = cache.get('index_page')
         self.assertNotEqual(str(response), post.text)
