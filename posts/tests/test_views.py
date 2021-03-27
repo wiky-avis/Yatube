@@ -290,11 +290,11 @@ class PaginatorViewsTest(TestCase):
 
     def test_index_and_group_second_page_contains_three_records(self):
         response_pages = (self.client_auth.get(
-            reverse('index') + '?page=2'),
+            reverse('index'), {'page': 2}),
             self.client_auth.get(
             reverse(
                 'group_posts',
-                kwargs={'slug': PaginatorViewsTest.group.slug}) + '?page=2'))
+                kwargs={'slug': PaginatorViewsTest.group.slug}), {'page': 2}))
 
         for response in response_pages:
             with self.subTest():
