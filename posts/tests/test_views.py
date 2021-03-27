@@ -10,7 +10,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.models import Group, Post
+from posts.models import Comment, Follow, Group, Post
 
 User = get_user_model()
 
@@ -320,13 +320,6 @@ class TestCache(TestCase):
         super().setUpClass()
         cls.user = User.objects.create_user(username='vika')
 
-    def setUp(self):
-        self.client = Client()
-        self.client.force_login(TestCache.user)
-
-    def tearDown(self):
-        cache.clear()
-
     def test_cache_index_page(self):
         post = Post.objects.create(text='проверка кэша', author=TestCache.user)
 
@@ -338,7 +331,7 @@ class TestCache(TestCase):
         response2 = self.client.get(reverse('index'))
         self.assertContains(response2, post.text)
 
-        response = cache.delete('index_page')
+        cache.clear()
 
         response = cache.get('index_page')
         self.assertNotEqual(str(response), post.text)
@@ -347,19 +340,16 @@ class TestCache(TestCase):
         self.assertContains(response2, post.text)
 
     def test_cache_index_page_creatе_two_posts(self):
-        self.client.post(
-            reverse('new_post'),
-            data={'author': TestCache.user, 'text': 'проверка кэша'})
+        post = Post.objects.create(author=TestCache.user, text='проверка кэша')
 
         response = self.client.get(reverse('index'))
-        self.assertContains(response, 'проверка кэша')
+        self.assertContains(response, post.text)
 
-        self.client.post(
-            reverse('new_post'),
-            data={'author': TestCache.user, 'text': 'проверка кэша 2'})
+        post_two = Post.objects.create(
+            author=TestCache.user, text='проверка кэша 2')
 
         response = self.client.get(reverse('index'))
-        self.assertNotContains(response, 'проверка кэша 2')
+        self.assertNotContains(response, post_two.text)
 
 
 class TestFollow(TestCase):
@@ -370,68 +360,62 @@ class TestFollow(TestCase):
 
         cls.user_following = User.objects.create_user(username='victor')
 
-        cls.user_follower_2 = User.objects.create_user(username='zhanna')
+        cls.post = Post.objects.create(
+            text='Новая запись появляется в ленте подписчиков',
+            author=TestFollow.user_following)
 
-    def setUp(self):
-        self.user_not_authorized = Client()
+    def test_follow_authorized_user(self):
+        self.client.force_login(TestFollow.user_follower)
 
-        self.client_follower = Client()
-        self.client_follower.force_login(TestFollow.user_follower)
-
-        self.client_following = Client()
-        self.client_following.force_login(TestFollow.user_following)
-
-        self.client_follower_2 = Client()
-        self.client_follower_2.force_login(TestFollow.user_follower_2)
-
-    def test_follow_unfollow_authorized_user(self):
-        self.client_follower.get(reverse(
+        self.client.get(reverse(
             'profile_follow', kwargs={
                 'username': TestFollow.user_following.username}))
 
-        response = self.client_follower.get(reverse(
+        response = self.client.get(reverse(
             'profile', kwargs={
                 'username': TestFollow.user_following.username}))
 
         self.assertEqual(response.context['following_count'], 1)
 
-        self.client_follower.get(reverse(
+    def test_unfollow_authorized_user(self):
+        self.client.force_login(TestFollow.user_follower)
+
+        self.client.get(reverse(
             'profile_unfollow', kwargs={
                 'username': TestFollow.user_following.username}))
 
-        response = self.client_follower.get(reverse(
+        response = self.client.get(reverse(
             'profile', kwargs={
                 'username': TestFollow.user_following.username}))
 
         self.assertEqual(response.context['following_count'], 0)
 
     def test_follow_not_authorized_user(self):
-        self.user_not_authorized.get(reverse(
+        self.client.get(reverse(
             'profile_follow', kwargs={
                 'username': TestFollow.user_following.username}))
 
-        response = self.user_not_authorized.get(reverse(
+        response = self.client.get(reverse(
             'profile', kwargs={
                 'username': TestFollow.user_following.username}))
 
         self.assertEqual(response.context['following_count'], 0)
 
     def test_check_new_post_from_follower(self):
-        self.client_follower.get(reverse(
-            'profile_follow', kwargs={
-                'username': TestFollow.user_following.username}))
+        self.client.force_login(TestFollow.user_follower)
 
-        post_data = {'text': 'Новая запись появляется в ленте подписчиков'}
-        self.client_following.post(
-            reverse('new_post'),
-            data=post_data,
-            follow=True)
+        Follow.objects.create(
+            user=TestFollow.user_follower, author=TestFollow.user_following)
 
-        response = self.client_follower.get(reverse('follow_index'))
-        self.assertContains(response, post_data['text'])
+        response = self.client.get(reverse('follow_index'))
+        self.assertContains(response, TestFollow.post.text)
 
-        response = self.client_follower_2.get(reverse('follow_index'))
-        self.assertNotContains(response, post_data['text'])
+    def test_check_new_post_from_not_follower(self):
+        user_not_follower = User.objects.create_user(username='zhanna')
+        self.client.force_login(user_not_follower)
+
+        response = self.client.get(reverse('follow_index'))
+        self.assertNotContains(response, TestFollow.post.text)
 
 
 class TestComment(TestCase):
@@ -442,14 +426,10 @@ class TestComment(TestCase):
 
         cls.post = Post.objects.create(text='Просто текст', author=cls.user)
 
-    def setUp(self):
-        self.user_not_authorized = Client()
-
-        self.client_user = Client()
-        self.client_user.force_login(TestComment.user)
-
     def test_authorized_user_comments_posts(self):
-        self.client_user.post(
+        self.client.force_login(TestComment.user)
+
+        self.client.post(
             reverse(
                 'add_comment',
                 kwargs={
@@ -458,17 +438,13 @@ class TestComment(TestCase):
                 data={'text': 'Комментарий авторизированного пользователя'},
                 follow=True)
 
-        response = self.client_user.get(reverse(
-            'post',
-            kwargs={
-                'username': TestComment.user.username,
-                'post_id': TestComment.post.id}))
-
-        self.assertContains(
-            response, 'Комментарий авторизированного пользователя')
+        self.assertTrue(
+            Comment.objects.filter(
+                text='Комментарий авторизированного пользователя',
+                post_id=TestComment.post.id).exists())
 
     def test_comment_notauthorized(self):
-        self.user_not_authorized.post(
+        self.client.post(
             reverse(
                 'add_comment',
                 kwargs={
@@ -477,11 +453,7 @@ class TestComment(TestCase):
                 data={'text': 'Комментарий неавторизированного пользователя'},
                 follow=True)
 
-        response = self.client_user.get(reverse(
-            'post',
-            kwargs={
-                'username': TestComment.user.username,
-                'post_id': TestComment.post.id}))
-
-        self.assertNotContains(
-            response, 'Комментарий неавторизированного пользователя')
+        self.assertFalse(
+            Comment.objects.filter(
+                text='Комментарий неавторизированного пользователя',
+                post_id=TestComment.post.id).exists())
