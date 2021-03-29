@@ -220,12 +220,9 @@ class ImgPagesTests(TestCase):
     def test_pages_show_correct_context(self):
         url_list = (
             reverse('index'),
+            reverse('group_posts', kwargs={'slug': ImgPagesTests.group.slug}),
             reverse(
-                    'group_posts',
-                    kwargs={'slug': ImgPagesTests.group.slug}),
-            reverse(
-                    'profile',
-                    kwargs={'username': ImgPagesTests.user.username}))
+                'profile', kwargs={'username': ImgPagesTests.user.username}))
 
         for url in url_list:
             with self.subTest():
@@ -257,10 +254,11 @@ class PaginatorViewsTest(TestCase):
 
         ten_records = 10
         three_records = 3
-        objs = [Post(
-            text=f'Текст тестового поста {i}',
-            author=user,
-            group=group) for i in range(ten_records+three_records)]
+        objs = [
+            Post(
+                text=f'Текст тестового поста {i}',
+                author=user,
+                group=group) for i in range(ten_records+three_records)]
         Post.objects.bulk_create(objs)
 
         response_pages = (
