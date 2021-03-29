@@ -59,8 +59,6 @@ class PostModelTest(TestCase):
             f'{PostModelTest.group}': PostModelTest.group.title
         }
 
-        self.assertEqual(len(str(PostModelTest.post)), 15)
-        self.assertEqual(len(str(post_2)), 11)
         for value, expected in str_test.items():
             with self.subTest():
                 self.assertEqual(value, expected)

@@ -1,15 +1,16 @@
+import os
 import shutil
-import tempfile
 
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from posts.models import Comment, Follow, Group, Post
+from yatube.settings import BASE_DIR
 
 User = get_user_model()
 
@@ -180,12 +181,11 @@ class PostsPagesTests(TestCase):
                 self.assertIsInstance(form_field, expected)
 
 
+@override_settings(MEDIA_ROOT=os.path.join(BASE_DIR, 'temp_dir'))
 class ImgPagesTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        settings.MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
-
         cls.small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
             b'\x01\x00\x80\x00\x00\x00\x00\x00'
@@ -217,40 +217,23 @@ class ImgPagesTests(TestCase):
         shutil.rmtree(settings.MEDIA_ROOT, ignore_errors=True)
         super().tearDownClass()
 
-    def setUp(self):
-        self.client = Client()
-
-    def test_index_pages_show_correct_context(self):
-        response = self.client.get(reverse('index'))
-
-        post_object = response.context['page'][0]
-
-        self.assertEqual(
-            post_object.image, f'posts/{ImgPagesTests.uploaded}')
-
-    def test_group_page_show_correct_context(self):
-        response = self.client.get(
+    def test_pages_show_correct_context(self):
+        url_list = (
+            reverse('index'),
             reverse(
-                'group_posts',
-                kwargs={'slug': ImgPagesTests.group.slug}))
-
-        post_object = response.context['page'][0]
-
-        self.assertEqual(
-            post_object.image, f'posts/{ImgPagesTests.uploaded}')
-
-    def test_username_page_show_correct_context(self):
-        response = self.client.get(
+                    'group_posts',
+                    kwargs={'slug': ImgPagesTests.group.slug}),
             reverse(
-                'profile',
-                kwargs={'username': ImgPagesTests.user.username}))
+                    'profile',
+                    kwargs={'username': ImgPagesTests.user.username}))
 
-        post_object = response.context['page'][0]
+        for url in url_list:
+            with self.subTest():
+                response = self.client.get(url)
+                self.assertEqual(
+                    response.context['page'][0].image,
+                    f'posts/{ImgPagesTests.uploaded}')
 
-        self.assertEqual(
-            post_object.image, f'posts/{ImgPagesTests.uploaded}')
-
-    def test_post_view_page_show_correct_context(self):
         response = self.client.get(
             reverse(
                 'post',
@@ -258,57 +241,41 @@ class ImgPagesTests(TestCase):
                     'username': ImgPagesTests.user.username,
                     'post_id': ImgPagesTests.post.id}))
 
-        post_object = response.context['post']
-
         self.assertEqual(
-            post_object.image, f'posts/{ImgPagesTests.uploaded}')
+            response.context['post'].image, f'posts/{ImgPagesTests.uploaded}')
 
 
 class PaginatorViewsTest(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.user = User.objects.create_user(username='vika')
 
-        cls.group = Group.objects.create(
+    def test_index_and_group_second_page_contains_ten_and_three_records(self):
+        user = User.objects.create_user(username='vika')
+        self.client.force_login(user)
+
+        group = Group.objects.create(
             title='Название тестовой группы',
-            description='описание тестовой группы',
             slug='test-slug')
 
+        ten_records = 10
+        three_records = 3
         objs = [Post(
             text=f'Текст тестового поста {i}',
-            author=cls.user,
-            group=cls.group) for i in range(13)]
+            author=user,
+            group=group) for i in range(ten_records+three_records)]
         Post.objects.bulk_create(objs)
 
-    def setUp(self):
-        self.client_auth = Client()
-        self.client_auth.force_login(PaginatorViewsTest.user)
-
-    def test_index_and_group_second_page_contains_three_records(self):
-        response_pages = (self.client_auth.get(
-            reverse('index'), {'page': 2}),
-            self.client_auth.get(
-            reverse(
-                'group_posts',
-                kwargs={'slug': PaginatorViewsTest.group.slug}), {'page': 2}))
-
-        for response in response_pages:
-            with self.subTest():
-                self.assertEqual(
-                    len(response.context.get('page').object_list), 3)
-
-    def test_index_and_group_first_page_contains_ten_records(self):
         response_pages = (
-            self.client_auth.get(reverse('index')),
-            self.client_auth.get(reverse(
-                'group_posts',
-                kwargs={'slug': PaginatorViewsTest.group.slug})))
+            reverse('index'),
+            reverse('group_posts', kwargs={'slug': group.slug}))
 
-        for response in response_pages:
-            with self.subTest():
-                self.assertEqual(
-                    len(response.context.get('page').object_list), 10)
+        pages_list = {f'{ten_records}': 1, f'{three_records}': 2}
+
+        for magic, i in pages_list.items():
+            for page in response_pages:
+                response = self.client.get(page, {'page': f'{i}'})
+                with self.subTest():
+                    self.assertEqual(
+                        len(response.context.get('page').object_list),
+                        int(magic))
 
 
 class TestCache(TestCase):
@@ -361,50 +328,41 @@ class TestFollow(TestCase):
             text='Новая запись появляется в ленте подписчиков',
             author=TestFollow.user_following)
 
-    def test_follow_authorized_user(self):
-        self.client.force_login(TestFollow.user_follower)
+    def setUp(self):
+        self.client_auth = Client()
+        self.client_auth.force_login(TestFollow.user_follower)
 
-        self.client.get(reverse(
+    def test_follow_authorized_user(self):
+        self.client_auth.get(reverse(
             'profile_follow', kwargs={
                 'username': TestFollow.user_following.username}))
 
-        response = self.client.get(reverse(
-            'profile', kwargs={
-                'username': TestFollow.user_following.username}))
-
-        self.assertEqual(response.context['following_count'], 1)
+        self.assertEqual(Follow.objects.count(), 1)
 
     def test_unfollow_authorized_user(self):
-        self.client.force_login(TestFollow.user_follower)
-
-        self.client.get(reverse(
+        self.client_auth.get(reverse(
             'profile_unfollow', kwargs={
                 'username': TestFollow.user_following.username}))
 
-        response = self.client.get(reverse(
-            'profile', kwargs={
-                'username': TestFollow.user_following.username}))
-
-        self.assertEqual(response.context['following_count'], 0)
+        self.assertEqual(Follow.objects.count(), 0)
 
     def test_follow_not_authorized_user(self):
-        self.client.get(reverse(
+        response = self.client.get(reverse(
             'profile_follow', kwargs={
                 'username': TestFollow.user_following.username}))
 
-        response = self.client.get(reverse(
-            'profile', kwargs={
-                'username': TestFollow.user_following.username}))
+        kw = {'username': TestFollow.user_following.username}
+        reverse_login = reverse('login')
+        reverse_follow = reverse('profile_follow', kwargs=kw)
 
-        self.assertEqual(response.context['following_count'], 0)
+        self.assertRedirects(
+            response, f'{reverse_login}?next={reverse_follow}')
 
     def test_check_new_post_from_follower(self):
-        self.client.force_login(TestFollow.user_follower)
-
         Follow.objects.create(
             user=TestFollow.user_follower, author=TestFollow.user_following)
 
-        response = self.client.get(reverse('follow_index'))
+        response = self.client_auth.get(reverse('follow_index'))
         self.assertContains(response, TestFollow.post.text)
 
     def test_check_new_post_from_not_follower(self):

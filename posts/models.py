@@ -47,7 +47,7 @@ class Post(models.Model):
         ordering = ('-pub_date',)
 
     def __str__(self):
-        return self.text[:15] if len(self.text) >= 15 else self.text
+        return self.text[:15]
 
 
 class Comment(models.Model):
