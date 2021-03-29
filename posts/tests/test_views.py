@@ -258,7 +258,7 @@ class PaginatorViewsTest(TestCase):
             Post(
                 text=f'Текст тестового поста {i}',
                 author=user,
-                group=group) for i in range(ten_records+three_records)]
+                group=group) for i in range(ten_records + three_records)]
         Post.objects.bulk_create(objs)
 
         response_pages = (
