@@ -267,13 +267,13 @@ class PaginatorViewsTest(TestCase):
 
         pages_list = {f'{ten_records}': 1, f'{three_records}': 2}
 
-        for magic, i in pages_list.items():
+        for records, i in pages_list.items():
             for page in response_pages:
                 response = self.client.get(page, {'page': f'{i}'})
                 with self.subTest():
                     self.assertEqual(
                         len(response.context.get('page').object_list),
-                        int(magic))
+                        int(records))
 
 
 class TestCache(TestCase):
