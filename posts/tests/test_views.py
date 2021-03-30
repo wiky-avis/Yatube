@@ -241,6 +241,10 @@ class ImgPagesTests(TestCase):
         self.assertEqual(
             response.context['post'].image, f'posts/{ImgPagesTests.uploaded}')
 
+        # html = response.content.decode()
+
+        # self.assertInHTML('<img class="card-img" src="/media/cache/92/fc/92fc9ce05ed8d55fe1a4fc232d150188.jpg" />', html)
+
 
 class PaginatorViewsTest(TestCase):
 
@@ -265,11 +269,11 @@ class PaginatorViewsTest(TestCase):
             reverse('index'),
             reverse('group_posts', kwargs={'slug': group.slug}))
 
-        pages_list = {f'{ten_records}': 1, f'{three_records}': 2}
+        pages_list = {ten_records: 1, three_records: 2}
 
-        for records, i in pages_list.items():
+        for records, page_number in pages_list.items():
             for page in response_pages:
-                response = self.client.get(page, {'page': f'{i}'})
+                response = self.client.get(page, {'page': page_number})
                 with self.subTest():
                     self.assertEqual(
                         len(response.context.get('page').object_list),
