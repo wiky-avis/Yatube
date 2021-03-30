@@ -222,28 +222,17 @@ class ImgPagesTests(TestCase):
             reverse('index'),
             reverse('group_posts', kwargs={'slug': ImgPagesTests.group.slug}),
             reverse(
-                'profile', kwargs={'username': ImgPagesTests.user.username}))
-
-        for url in url_list:
-            with self.subTest():
-                response = self.client.get(url)
-                self.assertEqual(
-                    response.context['page'][0].image,
-                    f'posts/{ImgPagesTests.uploaded}')
-
-        response = self.client.get(
+                'profile', kwargs={'username': ImgPagesTests.user.username}),
             reverse(
                 'post',
                 kwargs={
                     'username': ImgPagesTests.user.username,
                     'post_id': ImgPagesTests.post.id}))
 
-        self.assertEqual(
-            response.context['post'].image, f'posts/{ImgPagesTests.uploaded}')
-
-        # html = response.content.decode()
-
-        # self.assertInHTML('<img class="card-img" src="/media/cache/92/fc/92fc9ce05ed8d55fe1a4fc232d150188.jpg" />', html)
+        for url in url_list:
+            with self.subTest():
+                response = self.client.get(url)
+                self.assertContains(response, '<img')
 
 
 class PaginatorViewsTest(TestCase):
