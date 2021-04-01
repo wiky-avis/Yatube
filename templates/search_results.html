@@ -1,0 +1,32 @@
+{% extends 'base.html' %} 
+{% block title %} Поисковая выдача {% endblock %}
+
+{% block content %}
+
+  <div class='container'>
+    {% if page %}
+      <h1> Записи найденные по вашему запросу '{{ query }}'</h1>
+    
+      {% for post in page %}
+      {% include 'posts/includes/post_item.html' with post=post %}
+      {% endfor %}
+    {% else %}
+      <div class='row justify-content-center'>
+        <div class='col-md-8 p-5'>
+          <div class='card'>
+            <div class='card-header'>Не найдено публикаций по вашему запросу.</div>
+            <div class='card-body'>
+                <p>Попробуйте повторить запрос с другой формулировкой</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    {% endif %}
+  </div>
+
+  {% if page.has_other_pages %}
+    {% include 'includes/paginator.html' %}
+  {% endif %}
+
+{% endblock %}

@@ -1,7 +1,17 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models.base import Model
 
 User = get_user_model()
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    photo = models.ImageField(
+        upload_to='users/', blank=True, default='users/avatar180.jpg')
+
+    def __str__(self):
+        return self.user.username
 
 
 class Group(models.Model):
@@ -9,7 +19,7 @@ class Group(models.Model):
     slug = models.SlugField(unique=True, verbose_name='Ссылка')
     description = models.TextField(verbose_name='Описание')
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.title
 
     class Meta:

@@ -1,5 +1,11 @@
 <div class='card'>
   <div class='card-body'>
+    <div>
+    {% load thumbnail %}
+    {% thumbnail photo.photo '180x180' crop='center' upscale=True as im %}
+    <img class='card-img' src='{{ im.url }}' />
+    {% endthumbnail %}
+    </div>
     <div class='h2'>
   {{ profile.get_full_name }}
     </div>

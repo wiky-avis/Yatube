@@ -1,12 +1,27 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db.models.query_utils import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import CommentForm, PostForm
-from .models import Follow, Group, Post
+from .models import Follow, Group, Post, Profile
+from users.forms import UserEditForm, ProfileEditForm
 
 User = get_user_model()
+
+
+
+def search_results(request):
+    query = request.GET.get('q')
+    search_list = Post.objects.filter(
+            Q(text__icontains=query) | 
+            Q(author__username__icontains=query) | 
+            Q(group__title__icontains=query))
+    return render(
+        request, 'search_results.html', {
+            'page': search_list,
+            'query': query})
 
 
 def index(request):
@@ -46,6 +61,7 @@ def new_post(request):
 
 def post_view(request, username, post_id):
     post = get_object_or_404(Post, author__username=username, id=post_id)
+    photo = get_object_or_404(Profile, user=request.user)
     form = CommentForm(instance=None)
     comments = post.comments.all()
     following = Follow.objects.filter(
@@ -53,6 +69,7 @@ def post_view(request, username, post_id):
     return render(
         request, 'posts/post.html', {
             'profile': post.author,
+            'photo':photo,
             'post': post,
             'count': post.author.posts.count(),
             'form': form,
@@ -104,6 +121,7 @@ def post_delete(request, username, post_id):
 
 def profile(request, username):
     profile = get_object_or_404(User, username=username)
+    photo = get_object_or_404(Profile, user=profile)
     posts = profile.posts.all()
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
@@ -112,6 +130,7 @@ def profile(request, username):
         user=request.user.id, author=profile.id).all()
     return render(
         request, 'posts/profile.html', {
+            'photo': photo,
             'page': page,
             'count': posts.count(),
             'profile': profile,
@@ -119,6 +138,20 @@ def profile(request, username):
             'following': following,
             'follower_count': profile.follower.count(),
             'following_count': profile.following.count()})
+
+
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        user_form = UserEditForm(instance=request.user, data=request.POST)
+        profile_form = ProfileEditForm(instance=request.user.profile, data=request.POST, files=request.FILES)
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+    else:
+        user_form = UserEditForm(instance=request.user)
+        profile_form = ProfileEditForm(instance=request.user.profile)
+    return render(request,'account/profile_edit.html', {'user_form': user_form,'profile_form': profile_form})
 
 
 @login_required
