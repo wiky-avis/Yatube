@@ -11,7 +11,6 @@ from users.forms import UserEditForm, ProfileEditForm
 User = get_user_model()
 
 
-
 def search_results(request):
     query = request.GET.get('q')
     search_list = Post.objects.filter(
@@ -61,7 +60,7 @@ def new_post(request):
 
 def post_view(request, username, post_id):
     post = get_object_or_404(Post, author__username=username, id=post_id)
-    photo = get_object_or_404(Profile, user=request.user)
+    photo = get_object_or_404(Profile, user=post.author)
     form = CommentForm(instance=None)
     comments = post.comments.all()
     following = Follow.objects.filter(
@@ -142,16 +141,20 @@ def profile(request, username):
 
 @login_required
 def edit_profile(request):
-    if request.method == 'POST':
-        user_form = UserEditForm(instance=request.user, data=request.POST)
-        profile_form = ProfileEditForm(instance=request.user.profile, data=request.POST, files=request.FILES)
-        if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
-    else:
-        user_form = UserEditForm(instance=request.user)
-        profile_form = ProfileEditForm(instance=request.user.profile)
-    return render(request,'account/profile_edit.html', {'user_form': user_form,'profile_form': profile_form})
+    user_form = UserEditForm(request.POST or None, instance=request.user)
+    profile_form = ProfileEditForm(
+        request.POST or None,
+        files=request.FILES or None,
+        instance=request.user.profile)
+    if user_form.is_valid() and profile_form.is_valid():
+        user_form.save()
+        profile_form.save()
+        return redirect(
+            'edit_profile')
+    return render(
+        request,
+        'account/profile_edit.html',
+        {'user_form': user_form, 'profile_form': profile_form})
 
 
 @login_required

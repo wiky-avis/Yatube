@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models.base import Model
 
 User = get_user_model()
 
@@ -8,7 +7,10 @@ User = get_user_model()
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     photo = models.ImageField(
-        upload_to='users/', blank=True, default='users/avatar180.jpg')
+        upload_to='users/',
+        blank=True,
+        default='users/avatar180.jpg',
+        verbose_name='Аватарка')
 
     def __str__(self):
         return self.user.username
