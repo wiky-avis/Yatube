@@ -12,7 +12,7 @@ User = get_user_model()
 
 class SignUp(CreateView):
     form_class = CreationForm
-    success_url = reverse_lazy('index')
+    success_url = reverse_lazy('login')
     template_name = 'users/signup.html'
 
 
