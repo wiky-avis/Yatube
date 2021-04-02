@@ -4,6 +4,9 @@ from django.contrib.postgres.search import SearchVector
 from django.core.paginator import Paginator
 from django.db.models.query_utils import Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth import authenticate, login
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 from users.forms import ProfileEditForm, UserEditForm
 
@@ -154,7 +157,12 @@ def edit_profile(request):
     if user_form.is_valid() and profile_form.is_valid():
         user_form.save()
         profile_form.save()
-
+        # автоматический вход после редактирования профиля
+        user = authenticate(
+            username=user_form.cleaned_data['username'],
+            password=user_form.cleaned_data['password1'])
+        login(request, user)
+        return HttpResponseRedirect(reverse('edit_profile'))
     return render(
         request,
         'account/profile_edit.html',
