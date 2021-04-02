@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
+
 from posts.models import Profile
 
 from .forms import CreationForm

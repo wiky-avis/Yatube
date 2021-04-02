@@ -23,6 +23,8 @@ packaging==20.1
 pep8-naming==0.11.1
 Pillow==7.0.0
 pluggy==0.13.1
+psycopg2==2.8.6
+psycopg2-binary==2.8.6
 py==1.8.1
 pycodestyle==2.6.0
 pyflakes==2.2.0
