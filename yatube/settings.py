@@ -2,10 +2,12 @@ import os
 
 from dotenv import load_dotenv
 
+load_dotenv()
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-SECRET_KEY = '8n*axu%g$fl)1yke81c$jt_)*55favd5(d0-jk*&8o!10d4028'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = True
 
@@ -65,19 +67,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'yatube.wsgi.application'
 
-load_dotenv()
-
-NAME = os.getenv('NAME')
-USER = os.getenv('USER')
-PASSWORD = os.getenv('PASSWORD')
-
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': NAME,
-        'USER': USER,
-        'PASSWORD': PASSWORD,
+        'NAME': os.getenv('NAME'),
+        'USER': os.getenv('USER'),
+        'PASSWORD': os.getenv('PASSWORD'),
         'HOST': 'localhost',
         'PORT': '',
     }
