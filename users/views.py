@@ -1,11 +1,12 @@
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
-from django.contrib.auth import get_user_model
-from django.dispatch import receiver
-from .forms import CreationForm
-from django.db.models.signals import post_save
 from posts.models import Profile
-from django.core.exceptions import ObjectDoesNotExist
+
+from .forms import CreationForm
 
 User = get_user_model()
 
