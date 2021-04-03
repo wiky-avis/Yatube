@@ -8,9 +8,9 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     photo = models.ImageField(
         upload_to='users/',
-        blank=True,
         default='users/avatar180.jpg',
-        verbose_name='Аватарка')
+        verbose_name='Аватарка',
+        help_text='Добавьте аватарку')
 
     def __str__(self):
         return self.user.username
