@@ -1,8 +1,16 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from django.contrib.postgres.search import SearchVector
 from django.core.paginator import Paginator
 from django.db.models.query_utils import Q
 from django.shortcuts import get_object_or_404, redirect, render
+<<<<<<< HEAD
+=======
+from django.contrib.auth import authenticate, login
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+
+>>>>>>> f462d4736c4dc8f90c3d45acfad3139064468f2a
 from users.forms import ProfileEditForm, UserEditForm
 
 from .forms import CommentForm, PostForm
@@ -13,10 +21,13 @@ User = get_user_model()
 
 def search_results(request):
     query = request.GET.get('q')
-    search_list = Post.objects.filter(
-            Q(text__icontains=query) | 
-            Q(author__username__icontains=query) | 
-            Q(group__title__icontains=query))
+    search_list = Post.objects.annotate(
+        search=SearchVector(
+            'text',
+            'author',
+            'author__username',
+            'group__title',
+            'group__description')).filter(search=query)
     return render(
         request, 'search_results.html', {
             'page': search_list,
@@ -150,8 +161,12 @@ def edit_profile(request):
     if user_form.is_valid() and profile_form.is_valid():
         user_form.save()
         profile_form.save()
-        return redirect(
-            'edit_profile')
+        # автоматический вход после редактирования профиля
+        user = authenticate(
+            username=user_form.cleaned_data['username'],
+            password=user_form.cleaned_data['password1'])
+        login(request, user)
+        return HttpResponseRedirect(reverse('edit_profile'))
     return render(
         request,
         'account/profile_edit.html',
