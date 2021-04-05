@@ -15,6 +15,40 @@ from .forms import CreationForm
 User = get_user_model()
 
 
+from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from django.urls import reverse
+from .models import Topic, Message
+
+User = get_user_model()
+
+
+@login_required
+def topics(request):
+    pm_topics = Topic.objects.filter(sender=request.user)
+    return render(
+        request,
+        'private_messages/topics.html',
+        {'pm_topics': pm_topics})
+
+
+@login_required
+def topic_new(request):
+    pass
+
+
+@login_required
+def topic_read(request, topic_id):
+    pass
+
+
+@login_required
+def topic_delete(request):
+    pass
+
+
 class SignUp(CreateView):
     form_class = CreationForm
     success_url = reverse_lazy('login')

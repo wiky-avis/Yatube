@@ -1,19 +1,14 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.postgres.search import SearchVector
 from django.core.paginator import Paginator
-from django.db.models.query_utils import Q
-from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib.auth import authenticate, login
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.views import View
-
 from users.forms import ProfileEditForm, UserEditForm
-from posts.forms import MessageForm
 
 from .forms import CommentForm, PostForm
-from .models import Follow, Group, Post, Profile, Chat
+from .models import Follow, Group, Post, Profile
 
 User = get_user_model()
 
