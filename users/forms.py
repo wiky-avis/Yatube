@@ -51,7 +51,6 @@ class MessageSendForm(forms.ModelForm):
 
 
 class NewTopicForm(MessageSendForm):
-    recipient = forms.CharField(label='Recipient', help_text='Укажите имя пользователя')
     subject = forms.CharField(label='Subject')
 
     def clean_recipient(self):

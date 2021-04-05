@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Личные сообщения{% endblock %}
+{% block header %}{% endblock %}
+{% block content %}
+<main role='main' class='container'>
+  <div class='row'>
+      <div class='col-md-3 mb-3 mt-1'>
+        {% include 'private_messages/pm_menu.html' with private_messages=True %}
+      </div>
+      <div class='col-md-9'>
+        <form action='{% url "private_messages_topic_delete" %}' method='post'>
+            {% csrf_token %}
+            <table class="table table-hover">
+                <tr>
+                    <th scope="col">Тема</th>
+                    <th scope="col">Кому адресованно</th>
+                    <th scope="col">Статус</th>
+                    <th scope="col">Дата</th>
+                    <th scope="col">Удалить</th>
+                </tr>
+
+                {% for topic in pm_topics %}
+                    <tr>
+                        <td><a href='{% url "private_messages_topic" topic_id=topic.pk %}'>{{ topic.subject }}</a></td>
+                        <td>
+                            {% if topic.sender == user %}
+                                {{ topic.recipient }} <span>от меня</span>
+                            {% else %}
+                                <span>Мне от</span> {{ topic.sender }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if count_unread_messages %}
+                                {% if last_unread_message %}
+                                    <span class='badge badge-success'>Отправлено</span>
+                                {% else %}
+                                    <span class='badge badge-important'>Новое</span>
+                                {% endif %}
+                            {% else %}
+                                <span class='badge'>Прочитано</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ topic.last_sent_at|date:'d M, H:i:s' }}</td>
+                        <td><input type='checkbox' name='topic[]' value='{{ topic.id }}' /></td>
+                    </tr>
+                {% endfor %}
+                </table>
+
+            <div style="text-align:right;">        
+              <button type='submit' class='btn btn-primary'>
+                Удалить
+              </button>
+          </div>
+        </form>
+  </div>
+  </div>
+</main>
+{% endblock %}

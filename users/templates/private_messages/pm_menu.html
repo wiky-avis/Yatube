@@ -1,0 +1,34 @@
+<div class='card'>
+  <div class='card-body'>
+    <div>
+    {% load thumbnail %}
+    {% thumbnail photo.photo '180x180' crop='center' upscale=True as im %}
+    <img class='card-img' src='{{ im.url }}' />
+    {% endthumbnail %}
+    </div>
+    <div class='h2'>
+  {{ profile.get_full_name }}
+    </div>
+
+  </div>
+  <ul class='list-group list-group-flush'>
+    <li class='list-group-item'>
+      <div class='h6 text-muted'>
+        Исходящие: {{count_unread_messages}}
+      </div>
+    </li>
+    <li class='list-group-item'>
+      <div class='h6 text-muted'>
+        Входящие: 0
+      </div>
+    </li>
+
+    <li class='list-group-item'>
+      <div class='h6 text-muted'>
+    <a href='{% url "private_messages" %}'>
+          Все сообщения
+      </a>
+      </div>
+    </li>
+  </ul>
+</div>

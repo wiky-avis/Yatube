@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Личные сообщения{% endblock %}
+{% block header %}{% endblock %}
+{% block content %}
+{% load user_filters %}
+<main role='main' class='container'>
+  <div class='row'>
+      <div class='col-md-3 mb-3 mt-1'>
+        {% include 'private_messages/pm_menu.html' with private_messages_topic=True %}
+      </div>
+      <div class='col-md-9'>
+        {% if user.is_authenticated %}
+<div class='card my-4'>
+  <form method='post' action='{% url "private_messages_new" user_id=recipient.id %}'>
+    {% csrf_token %}
+    <h5 class='card-header'>Тема: {{ pm_topic.subject }}</h5>
+    {% for field in pm_form %}
+    <div class='card-body'>
+      <div class='form-group'>
+        {{ field|addclass:'form-control' }}
+      </div>
+      {% endfor %}
+      <button type='submit' class='btn btn-primary'>Ответить</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+{% for message in messages_all %}
+<div class='media card mb-4'>
+  <div class='media-body card-body'>
+    <h5 class='mt-0'>
+        {{ message.sender.username }}<br />
+        {{ message.sent_at|date:"d.m.Y H:i" }}
+      </a>
+    </h5>
+    <p>{{ message.body | linebreaksbr }}</p>
+  </div>
+</div>
+{% endfor %} 
+  </div>
+  </div>
+</main>
+{% endblock %}

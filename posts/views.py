@@ -73,7 +73,7 @@ def post_view(request, username, post_id):
     return render(
         request, 'posts/post.html', {
             'profile': post.author,
-            'photo':photo,
+            'photo': photo,
             'post': post,
             'count': post.author.posts.count(),
             'form': form,
