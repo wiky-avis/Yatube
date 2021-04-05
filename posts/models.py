@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.utils import timezone
 
 User = get_user_model()
 
@@ -105,35 +104,3 @@ class Follow(models.Model):
 
     def __str__(self):
         return f'{self.user} подписан на {self.author}'
-
-
-class Chat(models.Model):
-    DIALOG = 'D'
-    CHAT = 'C'
-    CHAT_TYPE_CHOICES = (
-        (DIALOG, ('Dialog')),
-        (CHAT, ('Chat'))
-    )
-
-    type = models.CharField(
-        ('Тип'),
-        max_length=1,
-        choices=CHAT_TYPE_CHOICES,
-        default=DIALOG
-    )
-    members = models.ManyToManyField(User, verbose_name=('Участник'))
-
-
-
-class Message(models.Model):
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, verbose_name=('Чат'))
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=('Пользователь'))
-    message = models.TextField(('Сообщение'))
-    pub_date = models.DateTimeField(('Дата сообщения'), default=timezone.now)
-    is_readed = models.BooleanField(('Прочитано'), default=False)
-
-    class Meta:
-        ordering = ['pub_date']
-
-    def __str__(self):
-        return self.message

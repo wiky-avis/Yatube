@@ -7,11 +7,13 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.views import View
 
 from users.forms import ProfileEditForm, UserEditForm
+from posts.forms import MessageForm
 
 from .forms import CommentForm, PostForm
-from .models import Follow, Group, Post, Profile
+from .models import Follow, Group, Post, Profile, Chat
 
 User = get_user_model()
 
