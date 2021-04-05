@@ -18,7 +18,7 @@ class PictureWidget(forms.widgets.FileInput):
             """<img src="$media$link" width="80" height="80" />""")
         img_html = mark_safe(
             html.substitute(media=settings.MEDIA_URL, link=value))
-        content = mark_safe(f'{input_html}<br><br>{img_html}')
+        content = mark_safe(f'{img_html}<br><br>{input_html}')
         return content
 
 

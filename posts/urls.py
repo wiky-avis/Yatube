@@ -9,6 +9,10 @@ urlpatterns = [
     path('follow/', views.follow_index, name='follow_index'),
     path('search/', views.search_results, name='search_results'),
     path('edit_profile/', views.edit_profile, name='edit_profile'),
+    path('messages/', views.topics, name='private_messages'),
+    path('messages/read/<int:topic_id>/', views.topic_read, name='private_messages_topic'),
+    path('messages/new/', views.topic_new, name='private_messages_new'),
+    path('messages/delete/', views.topic_delete, name='private_messages_topic_delete'),
     path('<str:username>/', views.profile, name='profile'),
     path(
         '<str:username>/follow/', views.profile_follow, name='profile_follow'),

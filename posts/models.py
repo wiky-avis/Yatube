@@ -5,6 +5,44 @@ from django.utils import timezone
 User = get_user_model()
 
 
+class Topic(models.Model):
+    sender = models.ForeignKey(
+        User, verbose_name='Отправитель',
+        related_name='pm_topics_sender',
+        on_delete=models.CASCADE)
+    recipient = models.ForeignKey(
+        User,
+        verbose_name='Получатель',
+        related_name='pm_topics_recipient',
+        on_delete=models.CASCADE)
+    subject = models.CharField('Тема', max_length=255)
+    last_sent_at = models.DateTimeField()
+
+    class Meta:
+        ordering = ['-last_sent_at']
+
+    def get_absolute_url(self):
+        return 'личные сообщения', [self.pk]
+
+
+class Message(models.Model):
+    topic = models.ForeignKey(
+        Topic, related_name='messages', on_delete=models.CASCADE)
+    sender = models.ForeignKey(
+        User, verbose_name='Отправитель',
+        on_delete=models.CASCADE,
+        related_name='messages')
+    body = models.TextField('Сообщение')
+    sent_at = models.DateTimeField('Опубликовано', auto_now_add=True)
+    read_at = models.DateTimeField('Читать', blank=True, null=True, default=None)
+
+    class Meta:
+        ordering = ['-sent_at']
+
+    def get_absolute_url(self):
+        return '%s#message-%s' % (self.topic.get_absolute_url(), self.pk)
+
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     photo = models.ImageField(
@@ -105,35 +143,3 @@ class Follow(models.Model):
 
     def __str__(self):
         return f'{self.user} подписан на {self.author}'
-
-
-class Chat(models.Model):
-    DIALOG = 'D'
-    CHAT = 'C'
-    CHAT_TYPE_CHOICES = (
-        (DIALOG, ('Dialog')),
-        (CHAT, ('Chat'))
-    )
-
-    type = models.CharField(
-        ('Тип'),
-        max_length=1,
-        choices=CHAT_TYPE_CHOICES,
-        default=DIALOG
-    )
-    members = models.ManyToManyField(User, verbose_name=('Участник'))
-
-
-
-class Message(models.Model):
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, verbose_name=('Чат'))
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name=('Пользователь'))
-    message = models.TextField(('Сообщение'))
-    pub_date = models.DateTimeField(('Дата сообщения'), default=timezone.now)
-    is_readed = models.BooleanField(('Прочитано'), default=False)
-
-    class Meta:
-        ordering = ['pub_date']
-
-    def __str__(self):
-        return self.message

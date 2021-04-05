@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 
-from .models import Comment, Group, Post, Profile
+from .models import Comment, Group, Post, Profile, Topic
 
 
 class PostAdmin(admin.ModelAdmin):
@@ -44,6 +44,11 @@ class ProfileAdmin(admin.ModelAdmin):
     get_image.short_description = 'Аватарка'
 
 
+class TopicAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'sender', 'recipient', 'subject', 'last_sent_at')
+
+
+admin.site.register(Topic, TopicAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Group, GroupAdmin)
 admin.site.register(Comment, CommentAdmin)

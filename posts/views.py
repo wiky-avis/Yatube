@@ -2,16 +2,39 @@ from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.postgres.search import SearchVector
 from django.core.paginator import Paginator
-from django.db.models.query_utils import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from users.forms import ProfileEditForm, UserEditForm
 
-from .forms import CommentForm, PostForm
-from .models import Follow, Group, Post, Profile
+from .forms import CommentForm, MessageSendForm, NewTopicForm, PostForm
+from .models import Follow, Group, Post, Profile, Topic
 
 User = get_user_model()
+
+
+@login_required
+def topics(request):
+    pm_topics = Topic.objects.filter(sender=request.user)
+    return render(
+        request,
+        'private_messages/topics.html',
+        {'pm_topics': pm_topics})
+
+
+@login_required
+def topic_new(request):
+    pass
+
+
+@login_required
+def topic_read(request, topic_id):
+    pass
+
+
+@login_required
+def topic_delete(request):
+    pass
 
 
 def search_results(request):
@@ -51,7 +74,6 @@ def group_posts(request, slug):
             'group': group,
             'page': page,
             'is_active': True})
-            
 
 
 @login_required
