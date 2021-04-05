@@ -1,20 +1,18 @@
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.urls import reverse_lazy
-from django.views.generic import CreateView
-from django.http import HttpResponseRedirect
-from django.urls import reverse
-
-from posts.models import Profile
-
-from .forms import CreationForm, NewTopicForm, MessageSendForm
+from datetime import datetime
 
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render, get_object_or_404
-from .models import Topic, Message
-from datetime import datetime
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
+from django.views.generic import CreateView
+from posts.models import Profile
+
+from .forms import CreationForm, MessageSendForm, NewTopicForm
+from .models import Message, Topic
 
 User = get_user_model()
 
@@ -25,8 +23,9 @@ def topics(request):
     user = request.user
     profile = get_object_or_404(User, id=request.user.id)
     photo = get_object_or_404(Profile, user=profile)
-    count_unread_messages = user.sender_messages.filter(read_at__exact=None).count()
+    count_unread_messages = profile.sender_messages.filter(read_at__exact=None).count()
     last_unread_message = user.sender_messages.order_by('-sent_at').filter(read_at__exact=None)
+    count_unread = Message.objects.count_unread(user=profile)
 
     return render(
         request,
@@ -37,7 +36,8 @@ def topics(request):
             'count_unread_messages': count_unread_messages,
             'last_unread_message': last_unread_message,
             'profile': profile,
-            'photo': photo})
+            'photo': photo,
+            'count_unread': count_unread})
 
 
 @login_required
