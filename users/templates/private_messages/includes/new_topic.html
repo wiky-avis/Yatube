@@ -1,0 +1,13 @@
+{% load user_filters %}
+<form  action='{% url "private_messages_new" user_id=recipient.id %}' method='post'>
+      {% csrf_token %}
+      <h5 class='card-header'>{% if topic %}Тема: {{ pm_topic.subject }}{% else %}Написать сообщение{% endif %}</h5>
+      {% for field in pm_form %}
+      <div class='card-body'>
+      <div class='form-group'>
+        {{ field|addclass:'form-control' }}
+      </div>
+      {% endfor %}
+      <button type='submit' class='btn btn-primary'>{% if topic %}Ответить{% else %}Отправить{% endif %}</button>
+      </div>
+  </form>

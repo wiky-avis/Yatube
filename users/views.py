@@ -5,7 +5,6 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView
@@ -19,12 +18,10 @@ User = get_user_model()
 
 @login_required
 def topics(request):
-    pm_topics = Topic.objects.by_user(request.user)
-    user = request.user
     profile = get_object_or_404(User, id=request.user.id)
+    pm_topics = Topic.objects.by_user(profile)
     photo = get_object_or_404(Profile, user=profile)
-    count_unread_messages = profile.sender_messages.filter(read_at__exact=None).count()
-    last_unread_message = user.sender_messages.order_by('-sent_at').filter(read_at__exact=None)
+    count_message = Topic.objects.by_user(user=profile).count()
     count_unread = Message.objects.count_unread(user=profile)
 
     return render(
@@ -32,21 +29,20 @@ def topics(request):
         'private_messages/topics.html',
         {
             'pm_topics': pm_topics,
-            'user': user,
-            'count_unread_messages': count_unread_messages,
-            'last_unread_message': last_unread_message,
             'profile': profile,
             'photo': photo,
-            'count_unread': count_unread})
+            'count_unread': count_unread,
+            'count_message': count_message})
 
 
 @login_required
 def topic_new(request, user_id):
     recipient = get_object_or_404(User, id=user_id)
     photo = get_object_or_404(Profile, user=recipient)
-    count_unread_messages = recipient.sender_messages.filter(read_at__exact=None).count()
+    count_message = Topic.objects.by_user(user=recipient).count()
+    count_unread = Message.objects.count_unread(user=recipient)
 
-    form = NewTopicForm(request.POST or None,)
+    form = NewTopicForm(request.POST or None)
     if form.is_valid():
         message = form.save(commit=False)
 
@@ -61,7 +57,16 @@ def topic_new(request, user_id):
         message.save()
 
         return redirect(reverse('private_messages'))
-    return render(request, 'private_messages/topic_new.html', {'pm_form': form, 'recipient': recipient, 'profile': recipient, 'photo': photo, 'count_unread_messages': count_unread_messages})
+    return render(
+        request,
+        'private_messages/topic_new.html',
+        {
+            'pm_form': form,
+            'recipient': recipient,
+            'profile': recipient,
+            'photo': photo,
+            'count_unread': count_unread,
+            'count_message': count_message})
 
 
 @login_required
@@ -71,7 +76,8 @@ def topic_read(request, topic_id):
     messages_all = topic.topic_messages.all()
     profile = get_object_or_404(User, id=request.user.id)
     photo = get_object_or_404(Profile, user=profile)
-    count_unread_messages = messages_all.count()
+    count_message = Topic.objects.by_user(user=recipient).count()
+    count_unread = Message.objects.count_unread(user=recipient)
 
     form = MessageSendForm(request.POST or None, instance=topic)
     if form.is_valid():
@@ -100,7 +106,9 @@ def topic_read(request, topic_id):
             'recipient': recipient,
             'profile': profile,
             'photo': photo,
-            'count_unread_messages': count_unread_messages})
+            'count_unread': count_unread,
+            'count_message': count_message,
+            'topic': topic})
 
 
 @login_required

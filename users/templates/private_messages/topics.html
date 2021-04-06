@@ -5,7 +5,7 @@
 <main role='main' class='container'>
   <div class='row'>
       <div class='col-md-3 mb-3 mt-1'>
-        {% include 'private_messages/pm_menu.html' %}
+        {% include 'private_messages/includes/pm_menu.html' %}
       </div>
       <div class='col-md-9'>
         <form action='{% url "private_messages_topic_delete" %}' method='post'>
@@ -23,15 +23,15 @@
                     <tr>
                         <td><a href='{% url "private_messages_topic" topic_id=topic.pk %}'>{{ topic.subject }}</a></td>
                         <td>
-                            {% if topic.sender == user %}
+                            {% if topic.sender == request.user %}
                                 {{ topic.recipient }} <span>от меня</span>
                             {% else %}
                                 <span>Мне от</span> {{ topic.sender }}
                             {% endif %}
                         </td>
                         <td>
-                            {% if count_unread_messages %}
-                                {% if last_unread_message %}
+                            {% if topic.count_unread_messages %}
+                                {% if topic.last_unread_message == request.user %}
                                     <span class='badge badge-success'>Отправлено</span>
                                 {% else %}
                                     <span class='badge badge-important'>Новое</span>

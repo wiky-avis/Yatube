@@ -55,6 +55,18 @@ class Topic(models.Model):
     class Meta:
         ordering = ['-last_sent_at']
 
+    def count_messages(self):
+        return self.topic_messages.count()
+
+    def count_unread_messages(self):
+        return self.topic_messages.filter(read_at__exact=None).count()
+
+    def last_unread_message(self):
+        try:
+            return self.topic_messages.order_by('-sent_at').filter(read_at__exact=None)[0]
+        except IndexError:
+            return None
+
 
 class Message(models.Model):
     topic = models.ForeignKey(
