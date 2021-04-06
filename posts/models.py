@@ -12,6 +12,10 @@ class Profile(models.Model):
         verbose_name='Аватарка',
         help_text='Добавьте аватарку')
 
+    class Meta:
+        verbose_name_plural = 'Профили пользователей'
+        verbose_name = 'Профиль пользователя'
+
     def __str__(self):
         return self.user.username
 
