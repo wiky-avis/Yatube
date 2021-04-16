@@ -5,7 +5,7 @@ chardet==3.0.4
 colorama==0.4.4
 coverage==5.5
 Django==2.2.6
-django-debug-toolbar==2.2
+django-debug-toolbar==2.2.1
 django-override-settings==1.2
 flake8==3.8.4
 flake8-broken-line==0.3.0
