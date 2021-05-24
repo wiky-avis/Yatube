@@ -21,8 +21,6 @@ def topics(request):
     profile = get_object_or_404(User, id=request.user.id)
     pm_topics = Topic.objects.by_user(profile)
     photo = get_object_or_404(Profile, user=profile)
-    count_message = Topic.objects.by_user(user=profile).count()
-    count_unread = Message.objects.count_unread(user=profile)
 
     return render(
         request,
@@ -30,9 +28,7 @@ def topics(request):
         {
             'pm_topics': pm_topics,
             'profile': profile,
-            'photo': photo,
-            'count_unread': count_unread,
-            'count_message': count_message})
+            'photo': photo})
 
 
 @login_required
@@ -72,8 +68,8 @@ def topic_new(request, user_id):
 
 @login_required
 def answer_topic(request, topic_id):
-    topic = get_object_or_404(Topic.objects.by_user(request.user), id=topic_id)
-    recipient = get_object_or_404(User, id=topic.recipient.id)
+    topic = get_object_or_404(Topic, id=topic_id)
+    recipient = get_object_or_404(User, id=topic.sender.id)
 
     form = NewTopicForm(request.POST or None, instance=topic)
     if form.is_valid():
@@ -105,8 +101,6 @@ def topic_read(request, topic_id):
     messages_all = topic.topic_messages.all()
     profile = get_object_or_404(User, id=request.user.id)
     photo = get_object_or_404(Profile, user=profile)
-    count_message = Topic.objects.by_user(user=recipient).count()
-    count_unread = Message.objects.count_unread(user=recipient)
 
     form = MessageSendForm(request.POST or None, instance=topic)
 
@@ -123,8 +117,6 @@ def topic_read(request, topic_id):
             'recipient': recipient,
             'profile': profile,
             'photo': photo,
-            'count_unread': count_unread,
-            'count_message': count_message,
             'topic': topic})
 
 
