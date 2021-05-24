@@ -5,9 +5,8 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.utils.safestring import mark_safe
-from posts.models import Profile
 
-from .models import Message, Topic
+from posts.models import Profile
 
 User = get_user_model()
 
@@ -43,21 +42,3 @@ class ProfileEditForm(forms.ModelForm):
         widgets = {
             'photo': PictureWidget
         }
-
-
-class MessageSendForm(forms.ModelForm):
-    class Meta:
-        model = Message
-        fields = ('body',)
-
-
-class NewTopicForm(MessageSendForm):
-    subject = forms.CharField(label='Subject', required=False, initial='Без темы')
-
-    def clean_recipient(self):
-        try:
-            recipient = User.objects.get(username=self.cleaned_data['recipient'])
-        except User.DoesNotExist:
-            raise forms.ValidationError('Имя пользователя не найдено')
-
-        return recipient

@@ -2,7 +2,8 @@ import tempfile
 
 import pytest
 from mixer.backend.django import mixer as _mixer
-from posts.models import Post, Group
+
+from posts.models import Group, Post
 
 
 @pytest.fixture

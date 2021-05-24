@@ -14,6 +14,7 @@ urlpatterns = [
     path('auth/', include('django.contrib.auth.urls')),
     path('', include('posts.urls')),
     path('about/', include('about.urls', namespace='about')),
+    path('chat/', include('private_messages.urls')),
 ]
 
 if settings.DEBUG:
