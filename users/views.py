@@ -48,8 +48,9 @@ def topic_new(request, user_id):
 
         topic = Topic(sender=request.user)
         topic.recipient = recipient
-        topic.subject = form.cleaned_data['subject']
+
         topic.last_sent_at = datetime.now()
+        topic.subject = form.cleaned_data['subject']
         topic.save()
 
         message.topic = topic
@@ -70,6 +71,34 @@ def topic_new(request, user_id):
 
 
 @login_required
+def answer_topic(request, topic_id):
+    topic = get_object_or_404(Topic.objects.by_user(request.user), id=topic_id)
+    recipient = get_object_or_404(User, id=topic.recipient.id)
+
+    form = NewTopicForm(request.POST or None, instance=topic)
+    if form.is_valid():
+        message = form.save(commit=False)
+
+        topic.recipient = recipient
+        topic.last_sent_at = datetime.now()
+        topic.subject = topic.subject
+        topic.save()
+
+        message.topic = topic
+        message.sender = request.user
+        message.save()
+
+        return redirect(reverse('private_messages'))
+    return render(
+        request,
+        'private_messages/topic_read.html',
+        {
+            'pm_form': form,
+            'recipient': recipient,
+            'profile': recipient})
+
+
+@login_required
 def topic_read(request, topic_id):
     topic = get_object_or_404(Topic.objects.by_user(request.user), id=topic_id)
     recipient = get_object_or_404(User, id=topic.recipient.id)
@@ -80,18 +109,6 @@ def topic_read(request, topic_id):
     count_unread = Message.objects.count_unread(user=recipient)
 
     form = MessageSendForm(request.POST or None, instance=topic)
-    if form.is_valid():
-        message = form.save(commit=False)
-        message.topic = topic
-        message.recipient = recipient
-        message.sender = request.user
-        message.save()
-
-        topic.last_sent_at = message.sent_at
-        topic.subject = topic.subject
-        topic.save()
-
-        return redirect(reverse('private_messages'))
 
     # помечаем сообщения как прочитанные
     Message.objects.mark_read(request.user, topic)

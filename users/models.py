@@ -47,7 +47,7 @@ class Topic(models.Model):
         related_name='pm_topics_recipient',
         on_delete=models.CASCADE,
         help_text='Укажите имя получателя')
-    subject = models.CharField('Тема', max_length=255, blank=True, null=True, default='Без темы')
+    subject = models.CharField('Тема', max_length=255, default='Без темы')
     last_sent_at = models.DateTimeField()
 
     objects = TopicManager()

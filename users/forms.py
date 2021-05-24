@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from django.utils.safestring import mark_safe
 from posts.models import Profile
+
 from .models import Message, Topic
 
 User = get_user_model()
@@ -51,7 +52,7 @@ class MessageSendForm(forms.ModelForm):
 
 
 class NewTopicForm(MessageSendForm):
-    subject = forms.CharField(label='Subject')
+    subject = forms.CharField(label='Subject', required=False, initial='Без темы')
 
     def clean_recipient(self):
         try:

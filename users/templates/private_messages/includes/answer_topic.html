@@ -1,13 +1,13 @@
 {% load user_filters %}
-<form  action='{% url "private_messages_new" user_id=recipient.id %}' method='post'>
+<form  action='{% url "answer_messages"  topic_id=topic.pk %}' method='post'>
       {% csrf_token %}
-      <h5 class='card-header'>Написать сообщение</h5>
+      <h5 class='card-header'>Тема: {{ pm_topic.subject }}</h5>
       {% for field in pm_form %}
       <div class='card-body'>
       <div class='form-group'>
         {{ field|addclass:'form-control' }}
       </div>
       {% endfor %}
-      <button type='submit' class='btn btn-primary'>Отправить</button>
+      <button type='submit' class='btn btn-primary'>Ответить</button>
       </div>
   </form>

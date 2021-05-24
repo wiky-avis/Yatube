@@ -11,7 +11,7 @@
       <div class='col-md-9'>
         {% if user.is_authenticated %}
 <div class='card my-4'>
-  {% include 'private_messages/includes/new_topic.html' with topic=topic %}
+  {% include 'private_messages/includes/answer_topic.html' with topic=topic %}
 </div>
 {% endif %}
 {% for message in messages_all %}
