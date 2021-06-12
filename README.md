@@ -14,7 +14,7 @@ Python 3, Django 2.2 LST, PostgreSQL, pytest, unittest.
 *	Поиск по сайту.
 *	Возможность комментировать посты.
 
-Сайт выложен в сеть и доступен по адресу http://stroymart.pythonanywhere.com/
+Сайт выложен в сеть и доступен по адресу [Yatube](http://stroymart.pythonanywhere.com/)
 
 ## Установка:
 Клонируем репозиторий на локальную машину:
