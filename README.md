@@ -36,12 +36,5 @@ Python 3, Django 2.2 LST, PostgreSQL, pytest, unittest.
 ```$ python manage.py runserver```
 
 ## Примеры страниц:
-Для формирования ответов и запросов будет использовано расширение для VS Code [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client).
+https://recordit.co/lxtDC6a9oV
 
-Расширение REST Client позволяет прямо из VS Code отправлять HTTP-запросы, и в этом же интерфейсе просматривать ответы на них. Установка расширения стандартна: в строке поиска панели "Extensions" нужно ввести название плагина "REST Client" и нажать кнопку "Install" («Установить»).
-
-Запросы в REST Client нужно сохранять в файле с расширением .http. После установки создайте в VS Code новый файл (например requests.http). Запросы в файле отделяются друг от друга строками, содержащими три символа #.
-
-Для отправки любого запроса нажмите над ним ссылку "SendRequest". В правой части экрана вы увидите ответ сервера:
-
-![GitHub Logo](/images/окно_вскод.jpg)
